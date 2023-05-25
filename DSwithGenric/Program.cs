@@ -14,7 +14,7 @@ class Node<T>
     }
 }
 
-class BinaryTree<T>
+class BinaryTree<T> where T : IComparable<T>
 {
     public Node<T> Root { get; private set; }
 
@@ -60,22 +60,36 @@ class BinaryTree<T>
         return currentNode;
     }
 
-    public int Size()
+    public bool Search(T value)
     {
-        return GetSize(Root);
+        return SearchNode(Root, value);
     }
 
-    private int GetSize(Node<T> currentNode)
+    private bool SearchNode(Node<T> currentNode, T value)
     {
         if (currentNode == null)
         {
-            return 0;
+            return false;
         }
 
-        int leftSize = GetSize(currentNode.Left);
-        int rightSize = GetSize(currentNode.Right);
+        if (currentNode.Data.Equals(value))
+        {
+            return true;
+        }
 
-        return 1 + leftSize + rightSize;
+        bool leftSearch = SearchNode(currentNode.Left, value);
+        if (leftSearch)
+        {
+            return true;
+        }
+
+        bool rightSearch = SearchNode(currentNode.Right, value);
+        if (rightSearch)
+        {
+            return true;
+        }
+
+        return false;
     }
 }
 
@@ -93,11 +107,11 @@ class Program
         binaryTree.Add(5);
         binaryTree.Add(6);
         binaryTree.Add(7);
-        binaryTree.Add(10);
 
-        int size = binaryTree.Size();
-        Console.WriteLine("Size of the binary tree: " + size);
+        int valueToSearch = 3;
+        bool found = binaryTree.Search(valueToSearch);
+        Console.WriteLine("Search for " + valueToSearch + ": " + found);
 
-        // Output: Size of the binary tree: 7
+        // Output: Search for 63: False
     }
 }
