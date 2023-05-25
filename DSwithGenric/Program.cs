@@ -1,67 +1,81 @@
 ﻿using System;
 
-interface INode<T> where T : IComparable<T>
+class Node<T>
 {
-    T Key { get; set; }
-    INode<T> Left { get; set; }
-    INode<T> Right { get; set; }
-}
+    public T Data { get; set; }
+    public Node<T> Left { get; set; }
+    public Node<T> Right { get; set; }
 
-class MyBinaryNode<T> : INode<T> where T : IComparable<T>
-{
-    public T Key { get; set; }
-    public INode<T> Left { get; set; }
-    public INode<T> Right { get; set; }
-
-    public MyBinaryNode(T key)
+    public Node(T data)
     {
-        Key = key;
+        Data = data;
         Left = null;
         Right = null;
     }
 }
 
-class BinarySearchTree<T> where T : IComparable<T>
+class BinaryTree<T>
 {
-    private INode<T> root;
+    public Node<T> Root { get; private set; }
 
-    public void Add(T key)
+    public BinaryTree()
     {
-        root = AddNode(root, key);
+        Root = null;
     }
 
-    private INode<T> AddNode(INode<T> currentNode, T key)
+    public void Add(T data)
+    {
+        Root = AddNode(Root, data);
+    }
+
+    private Node<T> AddNode(Node<T> currentNode, T data)
     {
         if (currentNode == null)
         {
-            return new MyBinaryNode<T>(key);
+            return new Node<T>(data);
         }
 
-        if (key.CompareTo(currentNode.Key) < 0)
+        if (currentNode.Left == null)
         {
-            currentNode.Left = AddNode(currentNode.Left, key);
+            currentNode.Left = AddNode(currentNode.Left, data);
         }
-        else if (key.CompareTo(currentNode.Key) > 0)
+        else if (currentNode.Right == null)
         {
-            currentNode.Right = AddNode(currentNode.Right, key);
+            currentNode.Right = AddNode(currentNode.Right, data);
+        }
+        else
+        {
+            // Both left and right children are filled, so we recursively traverse down the tree
+            // using a level-order (breadth-first) traversal until we find a spot to insert the node
+            if (currentNode.Left != null)
+            {
+                currentNode.Left = AddNode(currentNode.Left, data);
+            }
+            else
+            {
+                currentNode.Right = AddNode(currentNode.Right, data);
+            }
         }
 
         return currentNode;
     }
 
-    public void InOrderTraversal()
+    public int Size()
     {
-        InOrderTraversal(root);
+        return GetSize(Root);
     }
 
-    private void InOrderTraversal(INode<T> currentNode)
+    private int GetSize(Node<T> currentNode)
     {
-        if (currentNode != null)
+        if (currentNode == null)
         {
-            InOrderTraversal(currentNode.Left);
-            Console.Write(currentNode.Key + " ");
-            InOrderTraversal(currentNode.Right);
+            return 0;
         }
+
+        int leftSize = GetSize(currentNode.Left);
+        int rightSize = GetSize(currentNode.Right);
+
+        return 1 + leftSize + rightSize;
     }
 }
 
@@ -69,13 +83,21 @@ class Program
 {
     static void Main()
     {
-        BinarySearchTree<int> bst = new BinarySearchTree<int>();
-        bst.Add(56); // Adding root node with key 56
-        bst.Add(30); // Adding node with key 30
-        bst.Add(70); // Adding node with key 70
+        BinaryTree<int> binaryTree = new BinaryTree<int>();
 
-        bst.InOrderTraversal(); // Printing the BST in-order (sorted)
+        // Adding nodes to the binary tree
+        binaryTree.Add(1);
+        binaryTree.Add(2);
+        binaryTree.Add(3);
+        binaryTree.Add(4);
+        binaryTree.Add(5);
+        binaryTree.Add(6);
+        binaryTree.Add(7);
+        binaryTree.Add(10);
 
-        // Output: 30 56 70
+        int size = binaryTree.Size();
+        Console.WriteLine("Size of the binary tree: " + size);
+
+        // Output: Size of the binary tree: 7
     }
 }
