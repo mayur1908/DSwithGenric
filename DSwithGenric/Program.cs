@@ -1,93 +1,67 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 
-class MyMapNode<TKey, TValue>
+interface INode<T> where T : IComparable<T>
 {
-    public TKey Key { get; }
-    public TValue Value { get; set; }
-    public MyMapNode<TKey, TValue> Next { get; set; }
+    T Key { get; set; }
+    INode<T> Left { get; set; }
+    INode<T> Right { get; set; }
+}
 
-    public MyMapNode(TKey key, TValue value)
+class MyBinaryNode<T> : INode<T> where T : IComparable<T>
+{
+    public T Key { get; set; }
+    public INode<T> Left { get; set; }
+    public INode<T> Right { get; set; }
+
+    public MyBinaryNode(T key)
     {
         Key = key;
-        Value = value;
+        Left = null;
+        Right = null;
     }
 }
 
-class LinkedList<TKey, TValue> : IEnumerable<KeyValuePair<TKey, TValue>>
+class BinarySearchTree<T> where T : IComparable<T>
 {
-    private MyMapNode<TKey, TValue> head;
+    private INode<T> root;
 
-    public void Add(TKey key, TValue value)
+    public void Add(T key)
     {
-        var newNode = new MyMapNode<TKey, TValue>(key, value);
-
-        if (head == null)
-        {
-            head = newNode;
-        }
-        else
-        {
-            var current = head;
-            while (current.Next != null)
-            {
-                current = current.Next;
-            }
-            current.Next = newNode;
-        }
+        root = AddNode(root, key);
     }
 
-    public TValue GetValue(TKey key)
+    private INode<T> AddNode(INode<T> currentNode, T key)
     {
-        var current = head;
-        while (current != null)
+        if (currentNode == null)
         {
-            if (current.Key.Equals(key))
-            {
-                return current.Value;
-            }
-            current = current.Next;
+            return new MyBinaryNode<T>(key);
         }
-        return default(TValue);
+
+        if (key.CompareTo(currentNode.Key) < 0)
+        {
+            currentNode.Left = AddNode(currentNode.Left, key);
+        }
+        else if (key.CompareTo(currentNode.Key) > 0)
+        {
+            currentNode.Right = AddNode(currentNode.Right, key);
+        }
+
+        return currentNode;
     }
 
-    public void Remove(TKey key)
+    public void InOrderTraversal()
     {
-        if (head == null)
-            return;
-
-        if (head.Key.Equals(key))
-        {
-            head = head.Next;
-            return;
-        }
-
-        var current = head;
-        while (current.Next != null)
-        {
-            if (current.Next.Key.Equals(key))
-            {
-                current.Next = current.Next.Next;
-                return;
-            }
-            current = current.Next;
-        }
+        InOrderTraversal(root);
     }
 
-    public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
+    private void InOrderTraversal(INode<T> currentNode)
     {
-        var current = head;
-        while (current != null)
+        if (currentNode != null)
         {
-            yield return new KeyValuePair<TKey, TValue>(current.Key, current.Value);
-            current = current.Next;
+            InOrderTraversal(currentNode.Left);
+            Console.Write(currentNode.Key + " ");
+            InOrderTraversal(currentNode.Right);
         }
-    }
-
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return GetEnumerator();
     }
 }
 
@@ -95,54 +69,13 @@ class Program
 {
     static void Main()
     {
-        string paragraph = "Paranoids are not paranoid because they are paranoid but because they keep putting themselves deliberately into paranoid avoidable situations";
+        BinarySearchTree<int> bst = new BinarySearchTree<int>();
+        bst.Add(56); // Adding root node with key 56
+        bst.Add(30); // Adding node with key 30
+        bst.Add(70); // Adding node with key 70
 
-        var wordFrequencyMap = new LinkedList<int, LinkedList<string, int>>();
+        bst.InOrderTraversal(); // Printing the BST in-order (sorted)
 
-        string[] words = paragraph.Split(' ');
-
-        for (int i = 0; i < words.Length; i++)
-        {
-            int index = words[i].GetHashCode();  // Get the hash code of the word as the index
-
-            var linkedList = wordFrequencyMap.GetValue(index);
-            if (linkedList == null)
-            {
-                linkedList = new LinkedList<string, int>();
-                wordFrequencyMap.Add(index, linkedList);
-            }
-
-            int frequency = linkedList.GetValue(words[i]);
-            if (frequency != 0)
-            {
-                linkedList.Add(words[i], frequency + 1);
-            }
-            else
-            {
-                linkedList.Add(words[i], 1);
-            }
-        }
-
-        // Remove the word "avoidable" from the word frequency map
-        int avoidableIndex = "avoidable".GetHashCode();
-        var avoidableList = wordFrequencyMap.GetValue(avoidableIndex);
-        if (avoidableList != null)
-        {
-            avoidableList.Remove("avoidable");
-        }
-
-        // Print the updated word frequency map
-        foreach (var kvp in wordFrequencyMap)
-        {
-            int index = kvp.Key;
-            var linkedList = kvp.Value;
-
-            Console.WriteLine("Index: " + index);
-
-            foreach (var node in linkedList)
-            {
-                Console.WriteLine("Word: " + node.Key + ", Frequency: " + node.Value);
-            }
-        }
+        // Output: 30 56 70
     }
 }
