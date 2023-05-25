@@ -19,19 +19,16 @@ class LinkedList<TKey, TValue> : IEnumerable<KeyValuePair<TKey, TValue>>
 {
     private MyMapNode<TKey, TValue> head;
 
-    // Add a new key-value pair to the linked list
     public void Add(TKey key, TValue value)
     {
         var newNode = new MyMapNode<TKey, TValue>(key, value);
 
-        // If the head is null, set the new node as the head
         if (head == null)
         {
             head = newNode;
         }
         else
         {
-            // Traverse to the end of the list and add the new node
             var current = head;
             while (current.Next != null)
             {
@@ -41,23 +38,43 @@ class LinkedList<TKey, TValue> : IEnumerable<KeyValuePair<TKey, TValue>>
         }
     }
 
-    // Get the value associated with the given key
     public TValue GetValue(TKey key)
     {
         var current = head;
         while (current != null)
         {
-            // Check if the current node's key matches the given key
             if (current.Key.Equals(key))
             {
-                return current.Value; // Return the value if a match is found
+                return current.Value;
             }
             current = current.Next;
         }
-        return default(TValue); // Return the default value if no match is found
+        return default(TValue);
     }
 
-    // Implement the IEnumerable interface to enable iteration over the key-value pairs
+    public void Remove(TKey key)
+    {
+        if (head == null)
+            return;
+
+        if (head.Key.Equals(key))
+        {
+            head = head.Next;
+            return;
+        }
+
+        var current = head;
+        while (current.Next != null)
+        {
+            if (current.Next.Key.Equals(key))
+            {
+                current.Next = current.Next.Next;
+                return;
+            }
+            current = current.Next;
+        }
+    }
+
     public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
     {
         var current = head;
@@ -80,7 +97,6 @@ class Program
     {
         string paragraph = "Paranoids are not paranoid because they are paranoid but because they keep putting themselves deliberately into paranoid avoidable situations";
 
-        // Create a linked list of linked lists to store the word frequency map
         var wordFrequencyMap = new LinkedList<int, LinkedList<string, int>>();
 
         string[] words = paragraph.Split(' ');
@@ -89,30 +105,33 @@ class Program
         {
             int index = words[i].GetHashCode();  // Get the hash code of the word as the index
 
-            // Retrieve the linked list corresponding to the index
             var linkedList = wordFrequencyMap.GetValue(index);
             if (linkedList == null)
             {
-                // If the linked list does not exist, create a new one and add it to the outer linked list
                 linkedList = new LinkedList<string, int>();
                 wordFrequencyMap.Add(index, linkedList);
             }
 
-            // Get the frequency of the current word in the inner linked list
             int frequency = linkedList.GetValue(words[i]);
             if (frequency != 0)
             {
-                // If the word already exists, increment its frequency
                 linkedList.Add(words[i], frequency + 1);
             }
             else
             {
-                // If the word is encountered for the first time, add it with a frequency of 1
                 linkedList.Add(words[i], 1);
             }
         }
 
-        // Iterate over the word frequency map and print the index and word frequencies
+        // Remove the word "avoidable" from the word frequency map
+        int avoidableIndex = "avoidable".GetHashCode();
+        var avoidableList = wordFrequencyMap.GetValue(avoidableIndex);
+        if (avoidableList != null)
+        {
+            avoidableList.Remove("avoidable");
+        }
+
+        // Print the updated word frequency map
         foreach (var kvp in wordFrequencyMap)
         {
             int index = kvp.Key;
